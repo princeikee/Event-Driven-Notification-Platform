@@ -17,7 +17,7 @@ function CtaButton({
   icon: Icon,
 }) {
   const base =
-    "btn-hover group inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl font-semibold text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 transition-all active:scale-[0.985]";
+    "btn-hover group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl font-semibold text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 transition-all active:scale-[0.985]";
 
   const styles =
     variant === "primary"
@@ -43,7 +43,7 @@ function CtaButton({
 function FeatureCard({ title, description, icon: Icon }) {
   return (
     <article 
-      className="group relative rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 overflow-hidden"
+      className="group relative rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 overflow-hidden"
       data-reveal
     >
       {/* Subtle shine effect */}
@@ -53,7 +53,7 @@ function FeatureCard({ title, description, icon: Icon }) {
         <Icon className="h-7 w-7 text-indigo-600" aria-hidden="true" />
       </div>
       
-      <h3 className="font-semibold text-2xl text-slate-900 mb-3 tracking-tight">{title}</h3>
+      <h3 className="font-semibold text-xl sm:text-2xl text-slate-900 mb-3 tracking-tight">{title}</h3>
       <p className="text-slate-600 leading-relaxed">{description}</p>
       
       <div className="absolute bottom-6 right-6 text-indigo-200 group-hover:text-indigo-300 transition-colors">
@@ -223,24 +223,24 @@ export default function Landing() {
         }
       `}</style>
 
-      <div className="mx-auto max-w-7xl px-6 py-8 lg:py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 lg:py-12">
         {/* HEADER */}
-        <header className="flex items-center justify-between sticky top-0 z-50 bg-white/80 backdrop-blur-xl py-5 border-b border-slate-100" data-reveal>
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sticky top-0 z-50 bg-white/80 backdrop-blur-xl py-4 sm:py-5 border-b border-slate-100" data-reveal>
           <div className="flex items-center gap-3">
             <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-inner">
               <BellRing className="h-6 w-6 text-white" />
             </div>
             <div>
-              <div className="font-bold text-2xl tracking-tighter">NotifyFlow</div>
+              <div className="font-bold text-xl sm:text-2xl tracking-tighter">NotifyFlow</div>
               <div className="text-[10px] text-slate-500 -mt-1">EVENT-DRIVEN</div>
             </div>
           </div>
 
-          <nav className="flex items-center gap-3">
+          <nav className="grid grid-cols-2 sm:flex items-center gap-3 w-full sm:w-auto">
             <CtaButton 
               variant="ghost" 
               onClick={() => navigate("/auth")} 
-              className="px-5 text-sm"
+              className="px-4 sm:px-5 text-sm w-full sm:w-auto"
               ariaLabel="Sign in"
             >
               Sign In
@@ -248,7 +248,7 @@ export default function Landing() {
             <CtaButton 
               variant="primary" 
               onClick={() => navigate("/auth?mode=register")} 
-              className="px-5 text-sm"
+              className="px-4 sm:px-5 text-sm w-full sm:w-auto"
               ariaLabel="Get started free"
             >
               Get Started
@@ -259,32 +259,32 @@ export default function Landing() {
         <main>
           {/* HERO */}
           <section 
-            className="hero-glow mt-12 lg:mt-20 rounded-3xl p-8 md:p-14 border border-slate-100 shadow-xl" 
+            className="hero-glow mt-8 sm:mt-12 lg:mt-20 rounded-3xl p-5 sm:p-8 md:p-14 border border-slate-100 shadow-xl" 
             data-reveal 
             aria-labelledby="hero-title"
           >
-            <div className="grid lg:grid-cols-12 gap-12 items-center">
+            <div className="grid lg:grid-cols-12 gap-8 sm:gap-12 items-center">
               <div className="lg:col-span-7">
                 <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-1 border shadow-sm mb-6">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 live-dot" />
                   <span className="text-xs font-medium tracking-widest text-emerald-700">Launch Live Dashboard</span>
                 </div>
 
-                <h1 id="hero-title" className="text-5xl md:text-6xl font-bold leading-none tracking-tighter text-balance">
+                <h1 id="hero-title" className="text-3xl sm:text-5xl md:text-6xl font-bold leading-tight sm:leading-none tracking-tighter text-balance">
                   Real-time notifications.<br />
                   <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent">Built to feel alive.</span>
                 </h1>
 
-                <p className="mt-6 text-xl text-slate-600 max-w-lg">
+                <p className="mt-4 sm:mt-6 text-base sm:text-xl text-slate-600 max-w-lg">
                   Manage live events, monitor workers, and analyze notifications in real-time production ready from day one
                 </p>
 
-                <div className="mt-10 flex flex-wrap gap-4">
+                <div className="mt-8 sm:mt-10 grid sm:flex gap-3 sm:gap-4">
                   <CtaButton
                     onClick={startDemo}
                     disabled={isDemoLoading}
                     variant="success"
-                    className="px-8 py-4 text-lg font-semibold shadow-2xl"
+                    className="px-6 sm:px-8 py-3.5 sm:py-4 text-base sm:text-lg font-semibold shadow-2xl w-full sm:w-auto"
                     ariaLabel="Start live demo"
                     icon={Zap}
                   >
@@ -294,7 +294,7 @@ export default function Landing() {
                   <CtaButton 
                     onClick={() => navigate("/auth?mode=register")} 
                     variant="primary" 
-                    className="px-8 py-4 text-lg"
+                    className="px-6 sm:px-8 py-3.5 sm:py-4 text-base sm:text-lg w-full sm:w-auto"
                     ariaLabel="Create account"
                   >
                     Create Free Account
@@ -317,11 +317,11 @@ export default function Landing() {
 
               {/* ARCHITECTURE DIAGRAM - NOW MORE LIVELY */}
               <div className="lg:col-span-5 relative">
-                <div className="rounded-3xl border border-slate-200 bg-white/95 backdrop-blur p-8 shadow-2xl">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="rounded-3xl border border-slate-200 bg-white/95 backdrop-blur p-5 sm:p-8 shadow-2xl">
+                  <div className="flex items-center justify-between gap-3 mb-6">
                     <div>
                       <div className="uppercase tracking-[2px] text-xs font-mono text-slate-500">System Architecture</div>
-                      <div className="text-lg font-semibold text-slate-900">Fully connected &amp; live</div>
+                      <div className="text-base sm:text-lg font-semibold text-slate-900">Fully connected &amp; live</div>
                     </div>
                     <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full">
                       <div className="w-2 h-2 bg-emerald-500 rounded-full live-dot" />
@@ -348,7 +348,7 @@ export default function Landing() {
                 </div>
 
                 {/* Floating badge */}
-                <div className="absolute -top-5 -right-5 bg-white shadow-xl rounded-2xl px-5 py-2.5 flex items-center gap-3 text-sm border border-slate-100 floating">
+                <div className="hidden sm:flex absolute -top-5 -right-5 bg-white shadow-xl rounded-2xl px-5 py-2.5 items-center gap-3 text-sm border border-slate-100 floating">
                   <Sparkles className="h-4 w-4 text-amber-500" />
                   <span className="font-medium">Simulated 1.2k events/sec</span>
                 </div>
@@ -357,15 +357,15 @@ export default function Landing() {
           </section>
 
           {/* FEATURES */}
-          <section className="mt-28" data-reveal aria-labelledby="features-title">
-            <div className="text-center mb-12">
+          <section className="mt-16 sm:mt-28" data-reveal aria-labelledby="features-title">
+            <div className="text-center mb-8 sm:mb-12">
               <div className="inline-flex items-center gap-2 text-indigo-600 text-sm font-medium tracking-widest">
                 <div className="h-px w-6 bg-indigo-200" /> POWERFUL BY DEFAULT
               </div>
-              <h2 id="features-title" className="text-5xl font-bold tracking-tighter mt-3">Everything you need.<br />Nothing you don’t.</h2>
+              <h2 id="features-title" className="text-3xl sm:text-5xl font-bold tracking-tighter mt-3">Everything you need.<br />Nothing you don’t.</h2>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {features.map((feature, index) => (
                 <FeatureCard 
                   key={index}
@@ -379,12 +379,12 @@ export default function Landing() {
 
           {/* FINAL CTA */}
           <section 
-            className="mt-28 rounded-3xl bg-gradient-to-br from-slate-900 to-zinc-900 text-white p-12 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl" 
+            className="mt-16 sm:mt-28 rounded-3xl bg-gradient-to-br from-slate-900 to-zinc-900 text-white p-6 sm:p-12 md:p-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 shadow-2xl" 
             data-reveal
           >
             <div>
               <div className="uppercase tracking-widest text-emerald-400 text-sm font-medium">Ready when you are</div>
-              <h3 className="text-4xl font-bold tracking-tight mt-3">Start exploring instantly.</h3>
+              <h3 className="text-2xl sm:text-4xl font-bold tracking-tight mt-3">Start exploring instantly.</h3>
               <p className="mt-3 text-slate-400 max-w-md">
                 Try the full-featured demo in one click or create a permanent account and keep everything.
               </p>
@@ -394,7 +394,7 @@ export default function Landing() {
               <CtaButton 
                 onClick={startDemo} 
                 variant="success" 
-                className="px-10 py-4 text-lg flex-1 md:flex-none justify-center"
+                className="px-8 sm:px-10 py-3.5 sm:py-4 text-base sm:text-lg flex-1 md:flex-none justify-center"
                 ariaLabel="Try demo"
                 icon={PlayCircle}
               >
@@ -404,7 +404,7 @@ export default function Landing() {
               <CtaButton 
                 onClick={() => navigate("/auth?mode=register")} 
                 variant="primary" 
-                className="px-10 py-4 text-lg flex-1 md:flex-none justify-center border-white/30"
+                className="px-8 sm:px-10 py-3.5 sm:py-4 text-base sm:text-lg flex-1 md:flex-none justify-center border-white/30"
                 ariaLabel="Sign up"
               >
                 Sign Up Free
@@ -414,7 +414,7 @@ export default function Landing() {
         </main>
 
         {/* FOOTER */}
-        <footer className="mt-28 border-t border-slate-100 pt-12 pb-20 text-center text-slate-400 text-sm">
+        <footer className="mt-16 sm:mt-28 border-t border-slate-100 pt-10 sm:pt-12 pb-12 sm:pb-20 text-center text-slate-400 text-sm">
           <div className="flex items-center justify-center gap-2 mb-4">
             <BellRing className="h-5 w-5 text-slate-300" />
             <span className="font-medium tracking-tight text-slate-900">NotifyFlow</span>
