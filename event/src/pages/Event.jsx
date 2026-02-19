@@ -455,17 +455,17 @@ export default function Event() {
 
       <nav className="glass-card sticky top-0 z-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:h-16 items-start sm:items-center py-3 sm:py-0 gap-3 sm:gap-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                 <Icon name="bell-ring" className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-slate-800">NotifyFlow</h1>
-                <p className="text-xs text-slate-500">Event-Driven Notification Platform</p>
+                <p className="text-xs text-slate-500 hidden sm:block">Event-Driven Notification Platform</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {isDemo ? <span className="px-2 py-1 text-xs rounded-full border border-amber-200 bg-amber-50 text-amber-700">DEMO MODE</span> : null}
               <div className="px-2 py-1 text-xs rounded-full border border-slate-200 bg-white text-slate-600 flex items-center gap-1">
                 <span className={`h-2 w-2 rounded-full ${isWsLive ? "bg-emerald-500" : "bg-rose-500"} ${activityPulse ? "animate-ping" : ""}`} />
@@ -486,15 +486,15 @@ export default function Event() {
         ) : null}
 
         <div className="glass-card rounded-2xl p-4 mb-8 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => simulateEvent("signup")} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium flex items-center gap-2"><Icon name="user-plus" className="w-4 h-4" />Simulate Signup</button>
-            <button onClick={() => simulateEvent("security")} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium flex items-center gap-2"><Icon name="shield-alert" className="w-4 h-4" />Security Alert</button>
-            <button onClick={() => simulateEvent("message")} className="px-4 py-2 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium flex items-center gap-2"><Icon name="message-square" className="w-4 h-4" />New Message</button>
+          <div className="grid grid-cols-1 sm:flex items-center gap-3 w-full lg:w-auto">
+            <button onClick={() => simulateEvent("signup")} className="w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2"><Icon name="user-plus" className="w-4 h-4" />Simulate Signup</button>
+            <button onClick={() => simulateEvent("security")} className="w-full sm:w-auto px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2"><Icon name="shield-alert" className="w-4 h-4" />Security Alert</button>
+            <button onClick={() => simulateEvent("message")} className="w-full sm:w-auto px-4 py-2 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2"><Icon name="message-square" className="w-4 h-4" />New Message</button>
             {user.role === "admin" || isDemo ? (
-              <button onClick={() => setIsBroadcastOpen(true)} className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium flex items-center gap-2"><Icon name="megaphone" className="w-4 h-4" />Send Broadcast</button>
+              <button onClick={() => setIsBroadcastOpen(true)} className="w-full sm:w-auto px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2"><Icon name="megaphone" className="w-4 h-4" />Send Broadcast</button>
             ) : null}
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500"><Icon name="activity" className="w-4 h-4" /><span>{liveEvents}</span></div>
+          <div className="flex items-center gap-2 text-sm text-slate-500 w-full lg:w-auto justify-start lg:justify-end"><Icon name="activity" className="w-4 h-4" /><span>{liveEvents}</span></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -558,7 +558,7 @@ export default function Event() {
                   <p className="text-xs text-slate-500">Node.js/Express</p>
                 </div>
 
-                <Icon name="arrow-right" className="w-5 h-5 text-slate-400" />
+                <Icon name="arrow-right" className="hidden sm:block w-5 h-5 text-slate-400" />
 
                 <div className="flex flex-col items-center p-4 bg-slate-50 rounded-xl border-2 border-slate-200 min-w-[120px]">
                   <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-2">
@@ -568,7 +568,7 @@ export default function Event() {
                   <p className="text-xs text-slate-500">BullMQ</p>
                 </div>
 
-                <Icon name="arrow-right" className="w-5 h-5 text-slate-400" />
+                <Icon name="arrow-right" className="hidden sm:block w-5 h-5 text-slate-400" />
 
                 <div className="flex flex-col items-center p-4 bg-slate-50 rounded-xl border-2 border-slate-200 min-w-[120px]">
                   <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
@@ -578,7 +578,7 @@ export default function Event() {
                   <p className="text-xs text-slate-500">8 instances</p>
                 </div>
 
-                <Icon name="arrow-right" className="w-5 h-5 text-slate-400" />
+                <Icon name="arrow-right" className="hidden sm:block w-5 h-5 text-slate-400" />
 
                 <div className="flex flex-col items-center p-4 bg-slate-50 rounded-xl border-2 border-slate-200 min-w-[120px]">
                   <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
@@ -588,7 +588,7 @@ export default function Event() {
                   <p className="text-xs text-slate-500">Socket.io</p>
                 </div>
 
-                <Icon name="arrow-right" className="w-5 h-5 text-slate-400" />
+                <Icon name="arrow-right" className="hidden sm:block w-5 h-5 text-slate-400" />
 
                 <div className="flex flex-col items-center p-4 bg-slate-50 rounded-xl border-2 border-slate-200 min-w-[120px]">
                   <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
@@ -701,7 +701,7 @@ export default function Event() {
         </div>
       ) : null}
 
-      <div className="fixed bottom-4 right-4 z-50 space-y-2">
+      <div className="fixed bottom-4 right-4 left-4 sm:left-auto z-50 space-y-2">
         {toasts.map((t) => {
           const cfg = eventTypes[t.type] || eventTypes.message;
           const toastColor = colorMap[cfg.color] || colorMap.slate;
