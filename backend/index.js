@@ -9,7 +9,7 @@ const { all, get, initDb, run } = require("./db");
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 4000;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://Event-Driven-Notification-Platform-1";
 
 app.use(
   cors({
