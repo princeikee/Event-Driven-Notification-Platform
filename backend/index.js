@@ -47,7 +47,7 @@ function getUserIdFromRequest(req) {
 
 async function writeLog({ userId = null, level = "info", category = "system", message }) {
   await run(
-    "INSERT INTO system_logs (user_id, level, category, message) VALUES (?, ?, ?, ?)",
+    "INSERT INTO system_logs (user_id, level, category, message) VALUES ($1, $2, $3, $4)",
     [userId, level, category, message]
   );
 }
@@ -69,7 +69,7 @@ function emitPresence() {
 async function resolvePresenceUser(userId) {
   if (!userId) return null;
   const user = await get(
-    "SELECT id, name, email, role, is_active as isActive FROM users WHERE id = ?",
+    'SELECT id, name, email, role, is_active as "isActive" FROM users WHERE id = $1',
     [userId]
   );
   if (!user || Number(user.isActive) === 0) return null;
@@ -125,7 +125,7 @@ async function requireAuth(req, res) {
   }
 
   const user = await get(
-    "SELECT id, name, email, role, is_active as isActive FROM users WHERE id = ?",
+    'SELECT id, name, email, role, is_active as "isActive" FROM users WHERE id = $1',
     [userId]
   );
 
@@ -139,7 +139,7 @@ async function requireAuth(req, res) {
     return null;
   }
 
-  await run("UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE id = ?", [user.id]);
+  await run("UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE id = $1", [user.id]);
   req.authUser = user;
   return user;
 }
@@ -171,7 +171,7 @@ app.post("/api/auth/register", async (req, res) => {
   const normalizedEmail = String(email).trim().toLowerCase();
 
   try {
-    const existing = await get("SELECT id FROM users WHERE email = ?", [normalizedEmail]);
+    const existing = await get("SELECT id FROM users WHERE email = $1", [normalizedEmail]);
     if (existing) return res.status(409).json({ message: "Email already registered" });
 
     const countRow = await get("SELECT COUNT(*) as total FROM users");
@@ -179,7 +179,7 @@ app.post("/api/auth/register", async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const result = await run(
-      "INSERT INTO users (name, email, role, is_active, password_hash, last_active) VALUES (?, ?, ?, 1, ?, CURRENT_TIMESTAMP)",
+      "INSERT INTO users (name, email, role, is_active, password_hash, last_active) VALUES ($1, $2, $3, 1, $4, CURRENT_TIMESTAMP) RETURNING *",
       [String(name).trim(), normalizedEmail, assignedRole, passwordHash]
     );
 
@@ -212,7 +212,7 @@ app.post("/api/auth/login", async (req, res) => {
   try {
     const normalizedEmail = String(email).trim().toLowerCase();
     const user = await get(
-      "SELECT id, name, email, role, is_active as isActive, password_hash FROM users WHERE email = ?",
+      'SELECT id, name, email, role, is_active as "isActive", password_hash FROM users WHERE email = $1',
       [normalizedEmail]
     );
 
@@ -223,7 +223,7 @@ app.post("/api/auth/login", async (req, res) => {
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) return res.status(401).json({ message: "Invalid email or password" });
 
-    await run("UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE id = ?", [user.id]);
+    await run("UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE id = $1", [user.id]);
     await writeLog({ userId: user.id, category: "auth", message: `User login: ${user.email}` });
 
     return res.status(200).json({
@@ -274,10 +274,10 @@ app.get("/api/dashboard/stats", async (req, res) => {
   try {
     const stats = await get(
       `SELECT
-        (SELECT COUNT(*) FROM users WHERE is_active = 1) AS activeUsers,
-        (SELECT COUNT(*) FROM events WHERE user_id = ? AND DATE(created_at) = DATE('now')) AS eventsToday,
-        (SELECT COUNT(*) FROM notifications WHERE user_id = ?) AS notificationsSent,
-        (SELECT COUNT(*) FROM notifications WHERE user_id = ? AND status IN ('queued', 'processing', 'pending')) AS queueDepth`,
+        (SELECT COUNT(*) FROM users WHERE is_active = 1) AS "activeUsers",
+        (SELECT COUNT(*) FROM events WHERE user_id = $1 AND DATE(created_at) = CURRENT_DATE) AS "eventsToday",
+        (SELECT COUNT(*) FROM notifications WHERE user_id = $2) AS "notificationsSent",
+        (SELECT COUNT(*) FROM notifications WHERE user_id = $3 AND status IN ('queued', 'processing', 'pending')) AS "queueDepth"`,
       [auth.id, auth.id, auth.id]
     );
 
@@ -301,9 +301,9 @@ app.get("/api/dashboard/events", async (req, res) => {
 
   try {
     const events = await all(
-      `SELECT id, type, message, created_at as createdAt
+      `SELECT id, type, message, created_at as "createdAt"
        FROM events
-       WHERE user_id = ?
+       WHERE user_id = $1
        ORDER BY id DESC
        LIMIT 20`,
       [auth.id]
@@ -321,9 +321,9 @@ app.get("/api/dashboard/notifications", async (req, res) => {
 
   try {
     const notifications = await all(
-      `SELECT id, type, title, message, status, created_at as createdAt
+      `SELECT id, type, title, message, status, created_at as "createdAt"
        FROM notifications
-       WHERE user_id = ?
+       WHERE user_id = $1
        ORDER BY id DESC
        LIMIT 20`,
       [auth.id]
@@ -341,11 +341,11 @@ app.get("/api/dashboard/analytics", async (req, res) => {
 
   try {
     const rows = await all(
-      `SELECT strftime('%H:00', created_at) as hourSlot, COUNT(*) as total
+      `SELECT TO_CHAR(DATE_TRUNC('hour', created_at), 'HH24:00') as "hourSlot", COUNT(*) as total
        FROM events
-       WHERE user_id = ?
-       GROUP BY hourSlot
-       ORDER BY hourSlot ASC`,
+       WHERE user_id = $1
+       GROUP BY DATE_TRUNC('hour', created_at)
+       ORDER BY DATE_TRUNC('hour', created_at) ASC`,
       [auth.id]
     );
     return res.status(200).json({ points: rows });
@@ -388,10 +388,10 @@ app.get("/api/system/workers", async (req, res) => {
   try {
     const metrics = await get(
       `SELECT
-        (SELECT COUNT(*) FROM notifications WHERE user_id = ? AND status = 'queued') AS queuedCount,
-        (SELECT COUNT(*) FROM notifications WHERE user_id = ? AND status = 'processing') AS processingCount,
-        (SELECT COUNT(*) FROM notifications WHERE user_id = ? AND DATE(created_at) = DATE('now')) AS notificationsToday,
-        (SELECT COUNT(*) FROM events WHERE user_id = ? AND DATE(created_at) = DATE('now')) AS eventsToday`,
+        (SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND status = 'queued') AS "queuedCount",
+        (SELECT COUNT(*) FROM notifications WHERE user_id = $2 AND status = 'processing') AS "processingCount",
+        (SELECT COUNT(*) FROM notifications WHERE user_id = $3 AND DATE(created_at) = CURRENT_DATE) AS "notificationsToday",
+        (SELECT COUNT(*) FROM events WHERE user_id = $4 AND DATE(created_at) = CURRENT_DATE) AS "eventsToday"`,
       [auth.id, auth.id, auth.id, auth.id]
     );
 
@@ -429,7 +429,7 @@ app.post("/api/events/trigger", async (req, res) => {
 
   try {
     const result = await run(
-      "INSERT INTO events (user_id, type, message, is_demo) VALUES (?, ?, ?, 0)",
+      "INSERT INTO events (user_id, type, message, is_demo) VALUES ($1, $2, $3, 0) RETURNING *",
       [auth.id, type, message]
     );
     await writeLog({ userId: auth.id, category: "event", message: `Event ${type}: ${message}` });
@@ -453,12 +453,12 @@ app.post("/api/broadcasts", async (req, res) => {
     const activeUsers = await all("SELECT id FROM users WHERE is_active = 1");
     for (const target of activeUsers) {
       await run(
-        "INSERT INTO notifications (user_id, type, title, message, status, is_demo) VALUES (?, ?, ?, ?, ?, 0)",
+        "INSERT INTO notifications (user_id, type, title, message, status, is_demo) VALUES ($1, $2, $3, $4, $5, 0)",
         [target.id, "broadcast", title, message, "delivered"]
       );
     }
     await run(
-      "INSERT INTO events (user_id, type, message, is_demo) VALUES (?, ?, ?, 0)",
+      "INSERT INTO events (user_id, type, message, is_demo) VALUES ($1, $2, $3, 0)",
       [auth.id, "broadcast", `Broadcast sent: "${title}" to ${activeUsers.length} recipients`]
     );
     await writeLog({ userId: auth.id, category: "broadcast", message: `Broadcast "${title}": ${message}` });
@@ -487,9 +487,9 @@ app.get("/api/admin/stats", async (req, res) => {
   try {
     const row = await get(
       `SELECT
-        (SELECT COUNT(*) FROM users) AS totalUsers,
-        (SELECT COUNT(*) FROM events WHERE DATE(created_at) = DATE('now')) AS eventsToday,
-        (SELECT COUNT(*) FROM notifications WHERE status IN ('queued', 'processing', 'pending')) AS queueDepth`
+        (SELECT COUNT(*) FROM users) AS "totalUsers",
+        (SELECT COUNT(*) FROM events WHERE DATE(created_at) = CURRENT_DATE) AS "eventsToday",
+        (SELECT COUNT(*) FROM notifications WHERE status IN ('queued', 'processing', 'pending')) AS "queueDepth"`
     );
     res.status(200).json({
       totalUsers: Number(row?.totalUsers || 0),
@@ -514,10 +514,10 @@ app.get("/api/admin/users", async (req, res) => {
          u.name,
          u.email,
          u.role,
-         u.is_active as isActive,
-         u.created_at as createdAt,
-         u.last_active as lastActive,
-         (SELECT COUNT(*) FROM notifications n WHERE n.user_id = u.id) as totalNotificationsSent
+         u.is_active as "isActive",
+         u.created_at as "createdAt",
+         u.last_active as "lastActive",
+         (SELECT COUNT(*) FROM notifications n WHERE n.user_id = u.id) as "totalNotificationsSent"
        FROM users u
        ORDER BY u.id DESC`
     );
@@ -539,7 +539,7 @@ app.patch("/api/admin/users/:id/suspend", async (req, res) => {
   }
 
   try {
-    await run("UPDATE users SET is_active = ? WHERE id = ?", [isActive, userId]);
+    await run("UPDATE users SET is_active = $1 WHERE id = $2", [isActive, userId]);
     await writeLog({
       userId: auth.id,
       category: "admin",
@@ -562,7 +562,7 @@ app.patch("/api/admin/users/:id/role", async (req, res) => {
   }
 
   try {
-    await run("UPDATE users SET role = ? WHERE id = ?", [role, userId]);
+    await run("UPDATE users SET role = $1 WHERE id = $2", [role, userId]);
     await writeLog({ userId: auth.id, category: "admin", message: `Changed user #${userId} role to ${role}` });
     return res.status(200).json({ ok: true });
   } catch (error) {
@@ -580,10 +580,10 @@ app.delete("/api/admin/users/:id", async (req, res) => {
   }
 
   try {
-    await run("DELETE FROM notifications WHERE user_id = ?", [userId]);
-    await run("DELETE FROM events WHERE user_id = ?", [userId]);
-    await run("DELETE FROM system_logs WHERE user_id = ?", [userId]);
-    await run("DELETE FROM users WHERE id = ?", [userId]);
+    await run("DELETE FROM notifications WHERE user_id = $1", [userId]);
+    await run("DELETE FROM events WHERE user_id = $1", [userId]);
+    await run("DELETE FROM system_logs WHERE user_id = $1", [userId]);
+    await run("DELETE FROM users WHERE id = $1", [userId]);
     await writeLog({ userId: auth.id, category: "admin", message: `Deleted user #${userId}` });
     return res.status(200).json({ ok: true });
   } catch (error) {
@@ -598,7 +598,7 @@ app.get("/api/admin/logs", async (req, res) => {
 
   try {
     const logs = await all(
-      `SELECT id, user_id as userId, level, category, message, created_at as createdAt
+      `SELECT id, user_id as "userId", level, category, message, created_at as "createdAt"
        FROM system_logs
        ORDER BY id DESC
        LIMIT 200`
@@ -637,7 +637,7 @@ app.post("/api/admin/broadcast", async (req, res) => {
     const activeUsers = await all("SELECT id FROM users WHERE is_active = 1");
     for (const target of activeUsers) {
       await run(
-        "INSERT INTO notifications (user_id, type, title, message, status, is_demo) VALUES (?, ?, ?, ?, ?, 0)",
+        "INSERT INTO notifications (user_id, type, title, message, status, is_demo) VALUES ($1, $2, $3, $4, $5, 0)",
         [target.id, "broadcast", title, message, "delivered"]
       );
     }
