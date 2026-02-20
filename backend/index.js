@@ -10,12 +10,11 @@ const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 4000;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://Event-Driven-Notification-Platform-1";
-
-app.use(
-  cors({
+app.use(cors({
     origin: [FRONTEND_URL, "http://localhost:3000"],
   })
 );
+
 app.use(express.json());
 
 const io = new Server(server, {
@@ -47,7 +46,7 @@ function getUserIdFromRequest(req) {
 
 async function writeLog({ userId = null, level = "info", category = "system", message }) {
   await run(
-    "INSERT INTO system_logs (user_id, level, category, message) VALUES ($1, $2, $3, $4)",
+         "INSERT INTO system_logs (user_id, level, category, message) VALUES ($1, $2, $3, $4)",
     [userId, level, category, message]
   );
 }
@@ -72,7 +71,7 @@ async function resolvePresenceUser(userId) {
     'SELECT id, name, email, role, is_active as "isActive" FROM users WHERE id = $1',
     [userId]
   );
-  if (!user || Number(user.isActive) === 0) return null;
+  if (!user || user.isActive === false) return null;
   return user;
 }
 
@@ -133,7 +132,7 @@ async function requireAuth(req, res) {
     res.status(401).json({ message: "Invalid session user" });
     return null;
   }
-  const isSuspended = Number(user.isActive) === 0;
+  const isSuspended = user.isActive === false;
   if (isSuspended) {
     res.status(403).json({ message: "Account is suspended" });
     return null;
@@ -179,19 +178,20 @@ app.post("/api/auth/register", async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const result = await run(
-      "INSERT INTO users (name, email, role, is_active, password_hash, last_active) VALUES ($1, $2, $3, 1, $4, CURRENT_TIMESTAMP) RETURNING *",
-      [String(name).trim(), normalizedEmail, assignedRole, passwordHash]
+      "INSERT INTO users (name, email, role, is_active, password_hash, last_active) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) RETURNING id",
+      [String(name).trim(), normalizedEmail, assignedRole, true, passwordHash]
     );
+    const createdUserId = result?.rows?.[0]?.id ?? result.lastID;
 
     await writeLog({
-      userId: result.lastID,
+      userId: createdUserId,
       category: "auth",
       message: `User registered: ${normalizedEmail}`,
     });
 
     return res.status(201).json({
       user: {
-        id: result.lastID,
+        id: createdUserId,
         name: String(name).trim(),
         email: normalizedEmail,
         role: assignedRole,
@@ -217,7 +217,7 @@ app.post("/api/auth/login", async (req, res) => {
     );
 
     if (!user) return res.status(401).json({ message: "Invalid email or password" });
-    const isSuspended = Number(user.isActive) === 0;
+    const isSuspended = user.isActive === false;
     if (isSuspended) return res.status(403).json({ message: "Account is suspended" });
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
@@ -274,7 +274,7 @@ app.get("/api/dashboard/stats", async (req, res) => {
   try {
     const stats = await get(
       `SELECT
-        (SELECT COUNT(*) FROM users WHERE is_active = 1) AS "activeUsers",
+        (SELECT COUNT(*) FROM users WHERE is_active = TRUE) AS "activeUsers",
         (SELECT COUNT(*) FROM events WHERE user_id = $1 AND DATE(created_at) = CURRENT_DATE) AS "eventsToday",
         (SELECT COUNT(*) FROM notifications WHERE user_id = $2) AS "notificationsSent",
         (SELECT COUNT(*) FROM notifications WHERE user_id = $3 AND status IN ('queued', 'processing', 'pending')) AS "queueDepth"`,
@@ -429,7 +429,7 @@ app.post("/api/events/trigger", async (req, res) => {
 
   try {
     const result = await run(
-      "INSERT INTO events (user_id, type, message, is_demo) VALUES ($1, $2, $3, 0) RETURNING *",
+      "INSERT INTO events (user_id, type, message, is_demo) VALUES ($1, $2, $3, FALSE) RETURNING *",
       [auth.id, type, message]
     );
     await writeLog({ userId: auth.id, category: "event", message: `Event ${type}: ${message}` });
@@ -450,15 +450,15 @@ app.post("/api/broadcasts", async (req, res) => {
   if (!title || !message) return res.status(400).json({ message: "title and message are required" });
 
   try {
-    const activeUsers = await all("SELECT id FROM users WHERE is_active = 1");
+    const activeUsers = await all("SELECT id FROM users WHERE is_active = TRUE");
     for (const target of activeUsers) {
       await run(
-        "INSERT INTO notifications (user_id, type, title, message, status, is_demo) VALUES ($1, $2, $3, $4, $5, 0)",
+        "INSERT INTO notifications (user_id, type, title, message, status, is_demo) VALUES ($1, $2, $3, $4, $5, FALSE)",
         [target.id, "broadcast", title, message, "delivered"]
       );
     }
     await run(
-      "INSERT INTO events (user_id, type, message, is_demo) VALUES ($1, $2, $3, 0)",
+      "INSERT INTO events (user_id, type, message, is_demo) VALUES ($1, $2, $3, FALSE)",
       [auth.id, "broadcast", `Broadcast sent: "${title}" to ${activeUsers.length} recipients`]
     );
     await writeLog({ userId: auth.id, category: "broadcast", message: `Broadcast "${title}": ${message}` });
@@ -533,7 +533,7 @@ app.patch("/api/admin/users/:id/suspend", async (req, res) => {
   if (!auth) return;
   const userId = Number(req.params.id);
   const { suspended } = req.body || {};
-  const isActive = suspended ? 0 : 1;
+  const isActive = suspended ? false : true;
   if (userId === auth.id && suspended) {
     return res.status(400).json({ message: "You cannot deactivate your own account" });
   }
@@ -634,10 +634,10 @@ app.post("/api/admin/broadcast", async (req, res) => {
   if (!title || !message) return res.status(400).json({ message: "title and message are required" });
 
   try {
-    const activeUsers = await all("SELECT id FROM users WHERE is_active = 1");
+    const activeUsers = await all("SELECT id FROM users WHERE is_active = TRUE");
     for (const target of activeUsers) {
       await run(
-        "INSERT INTO notifications (user_id, type, title, message, status, is_demo) VALUES ($1, $2, $3, $4, $5, 0)",
+        "INSERT INTO notifications (user_id, type, title, message, status, is_demo) VALUES ($1, $2, $3, $4, $5, FALSE)",
         [target.id, "broadcast", title, message, "delivered"]
       );
     }
