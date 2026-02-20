@@ -271,9 +271,9 @@ export default function Admin() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-6">
+    <div className="min-h-screen bg-slate-100 px-3 sm:px-4 py-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex justify-between items-center">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-xl font-bold">Admin Dashboard</h1>
             <p className="text-sm text-slate-500">{isDemo ? "Demo Sandbox" : "Production Control Center"}</p>
@@ -289,8 +289,8 @@ export default function Admin() {
               </div>
             ) : null}
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={exportLogsJson} className="px-3 py-2 text-sm rounded border border-slate-200 flex items-center gap-1">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <button onClick={exportLogsJson} className="px-3 py-2 text-sm rounded border border-slate-200 flex items-center justify-center gap-1">
               <Download className="h-4 w-4" />
               Export Logs
             </button>
@@ -302,7 +302,7 @@ export default function Admin() {
 
         {notice ? <div className="text-sm px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700">{notice}</div> : null}
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Total Users", value: adminStats.totalUsers },
             { label: "Events Today", value: adminStats.eventsToday },
@@ -316,7 +316,7 @@ export default function Admin() {
           ))}
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600 leading-relaxed">
           System: <span className="font-semibold capitalize">{systemStatus.status}</span> - Region:{" "}
           <span className="font-semibold">{systemStatus.region}</span> - API latency:{" "}
           <span className="font-semibold">{systemStatus.latencyMs}ms</span>
@@ -331,12 +331,12 @@ export default function Admin() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <h2 className="font-semibold">User Management</h2>
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search users" className="border border-slate-200 rounded px-3 py-2 text-sm" />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search users" className="border border-slate-200 rounded px-3 py-2 text-sm w-full sm:w-64" />
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-[760px]">
                 <thead>
                   <tr className="text-left text-slate-500 border-b">
                     <th className="py-2 pr-2">Name</th>

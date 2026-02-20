@@ -91,12 +91,12 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-slate-100 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.15),_transparent_40%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.15),_transparent_45%)] flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white/95 backdrop-blur p-8 shadow-2xl shadow-slate-300/30">
-        <div className="mb-8 text-center">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white/95 backdrop-blur p-5 sm:p-8 shadow-2xl shadow-slate-300/30">
+        <div className="mb-6 sm:mb-8 text-center">
           <div className="mx-auto mb-4 h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
             <BellRing className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
             {mode === "register" ? "Create Your Account" : "NotifyFlow Login"}
           </h1>
           <p className="mt-2 text-sm text-slate-500">
