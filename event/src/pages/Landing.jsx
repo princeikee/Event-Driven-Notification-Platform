@@ -419,7 +419,7 @@ export default function Landing() {
             <BellRing className="h-5 w-5 text-slate-300" />
             <span className="font-medium tracking-tight text-slate-900">NotifyFlow</span>
           </div>
-          <p>© 2026 • A real-time notification platform</p>
+          <p>© 2026 • Made by Ikechukwu Princewill </p>
         </footer>
       </div>
     </div>
